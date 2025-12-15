@@ -13,72 +13,76 @@ return {
     },
     config = function()
       require("go").setup({
-        -- Disable LSP config (we handle it separately)
-        lsp_cfg = false,
-        lsp_gofumpt = true,
-        lsp_on_attach = false,
-        
-        -- Test settings
-        test_runner = "go",
-        run_in_floaterm = false,
-        
-        -- Icons
-        icons = { breakpoint = "🔴", currentpos = "🔵" },
-        
-        -- Diagnostic settings
-        diagnostic = {
-          hdlr = false,
-          underline = true,
-          virtual_text = { spacing = 0, prefix = "■" },
-          signs = true,
-          update_in_insert = false,
-        },
-        
-        -- Code lens
-        lsp_codelens = true,
-        
-        -- Inlay hints
-        lsp_inlay_hints = {
-          enable = true,
-          only_current_line = false,
-          only_current_line_autocmd = "CursorHold",
-        },
-        
-        -- Auto format and organize imports on save
-        lsp_document_formatting = true,
-        
-        -- Trouble integration
-        trouble = false,
-        
-        -- Test settings
-        test_efm = false,
-        luasnip = true,
-      })
+         -- Disable LSP config (we handle it separately)
+         lsp_cfg = false,
+         lsp_gofumpt = true,
+         lsp_on_attach = false,
+         
+         -- Test settings
+         test_runner = "go",
+         run_in_floaterm = false,
+         
+         -- Icons
+         icons = { breakpoint = "🔴", currentpos = "🔵" },
+         
+         -- Diagnostic settings
+         diagnostic = {
+           hdlr = false,
+           underline = true,
+           virtual_text = { spacing = 0, prefix = "■" },
+           signs = true,
+           update_in_insert = false,
+         },
+         
+         -- Code lens
+         lsp_codelens = true,
+         
+         -- Inlay hints
+         lsp_inlay_hints = {
+           enable = true,
+           only_current_line = false,
+           only_current_line_autocmd = "CursorHold",
+         },
+         
+         -- Auto format and organize imports on save
+         lsp_document_formatting = true,
+         
+         -- Trouble integration
+         trouble = false,
+         
+         -- Test settings
+         test_efm = false,
+         luasnip = true,
+         
+         -- goimports settings - auto import unused packages
+         goimports = "goimports",
+         goimports_local = "",
+       })
 
-      -- Keymaps for go.nvim
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "go",
-        callback = function()
-          local opts = { noremap = true, silent = true, buffer = true }
-          
-          -- Test commands
-          vim.keymap.set("n", "<leader>gt", "<cmd>GoTest<CR>", vim.tbl_extend("force", opts, { desc = "Go test" }))
-          vim.keymap.set("n", "<leader>gT", "<cmd>GoTestFile<CR>", vim.tbl_extend("force", opts, { desc = "Go test file" }))
-          vim.keymap.set("n", "<leader>gc", "<cmd>GoCoverage<CR>", vim.tbl_extend("force", opts, { desc = "Go coverage" }))
-          
-          -- Code generation
-          vim.keymap.set("n", "<leader>ga", "<cmd>GoAddTag<CR>", vim.tbl_extend("force", opts, { desc = "Go add tags" }))
-          vim.keymap.set("n", "<leader>gA", "<cmd>GoRmTag<CR>", vim.tbl_extend("force", opts, { desc = "Go remove tags" }))
-          vim.keymap.set("n", "<leader>gf", "<cmd>GoFillStruct<CR>", vim.tbl_extend("force", opts, { desc = "Go fill struct" }))
-          vim.keymap.set("n", "<leader>ge", "<cmd>GoIfErr<CR>", vim.tbl_extend("force", opts, { desc = "Go if err" }))
-          
-          -- Module management
-          vim.keymap.set("n", "<leader>gm", "<cmd>GoMod tidy<CR>", vim.tbl_extend("force", opts, { desc = "Go mod tidy" }))
-          
-          -- Code navigation
-          vim.keymap.set("n", "<leader>gs", "<cmd>GoFillSwitch<CR>", vim.tbl_extend("force", opts, { desc = "Go fill switch" }))
-        end,
-      })
+       -- Keymaps for go.nvim
+       vim.api.nvim_create_autocmd("FileType", {
+         pattern = "go",
+         callback = function()
+           local opts = { noremap = true, silent = true, buffer = true }
+           
+           -- Test commands
+           vim.keymap.set("n", "<leader>gt", "<cmd>GoTest<CR>", vim.tbl_extend("force", opts, { desc = "Go test" }))
+           vim.keymap.set("n", "<leader>gT", "<cmd>GoTestFile<CR>", vim.tbl_extend("force", opts, { desc = "Go test file" }))
+           vim.keymap.set("n", "<leader>gc", "<cmd>GoCoverage<CR>", vim.tbl_extend("force", opts, { desc = "Go coverage" }))
+           
+           -- Code generation
+           vim.keymap.set("n", "<leader>ga", "<cmd>GoAddTag<CR>", vim.tbl_extend("force", opts, { desc = "Go add tags" }))
+           vim.keymap.set("n", "<leader>gA", "<cmd>GoRmTag<CR>", vim.tbl_extend("force", opts, { desc = "Go remove tags" }))
+           vim.keymap.set("n", "<leader>gf", "<cmd>GoFillStruct<CR>", vim.tbl_extend("force", opts, { desc = "Go fill struct" }))
+           vim.keymap.set("n", "<leader>ge", "<cmd>GoIfErr<CR>", vim.tbl_extend("force", opts, { desc = "Go if err" }))
+           
+            -- Module management
+            vim.keymap.set("n", "<leader>gm", "<cmd>GoMod tidy<CR>", vim.tbl_extend("force", opts, { desc = "Go mod tidy" }))
+            
+            -- Code navigation
+            vim.keymap.set("n", "<leader>gs", "<cmd>GoFillSwitch<CR>", vim.tbl_extend("force", opts, { desc = "Go fill switch" }))
+         end,
+       })
     end,
     ft = { "go", "gomod" },
     build = ':lua require("go.install").update_all_sync()',

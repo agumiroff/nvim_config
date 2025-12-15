@@ -72,6 +72,12 @@ return {
             enabled = true,
           },
           use_libuv_file_watcher = true,
+          components = {
+            icon = function(config, node, state)
+              local default = require("neo-tree.sources.filesystem.components").icon
+              return default(config, node, state)
+            end,
+          },
         },
         
         default_component_configs = {
@@ -81,11 +87,14 @@ return {
             last_indent_marker = "└",
             indent_size = 2,
           },
-          icon = {
-            folder_closed = "",
-            folder_open = "",
-            folder_empty = "",
-            default = "",
+          modified = {
+            symbol = "[+]",
+            highlight = "NeoTreeModified",
+          },
+          name = {
+            trailing_slash = false,
+            use_git_status_colors = true,
+            highlight = "NeoTreeFileName",
           },
           git_status = {
             symbols = {
@@ -100,6 +109,12 @@ return {
               conflict = "",
             },
           },
+        },
+        renderer = {
+          use_devicons = true,
+          use_git_status_colors = true,
+          highlight_git = false,
+          root_folder_label = ":~:s?$?/?",
         },
       })
     end,

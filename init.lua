@@ -20,6 +20,12 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- Add Go bin directory to PATH for tools like goimports, gopls, etc.
+local gopath = vim.fn.expand("$HOME/go/bin")
+if vim.fn.isdirectory(gopath) == 1 then
+  vim.env.PATH = gopath .. ":" .. vim.env.PATH
+end
+
 -- Load configurations
 require("config.options")
 require("config.keymaps")

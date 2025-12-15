@@ -107,17 +107,24 @@ return {
           vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = args.buf,
             callback = function()
+              -- Format first
               vim.lsp.buf.format({ async = false })
-              -- Organize imports
+              
+              -- Then organize imports
               local params = vim.lsp.util.make_range_params()
               params.context = { only = { "source.organizeImports" } }
-              local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 1000)
-              for _, res in pairs(result or {}) do
-                for _, r in pairs(res.result or {}) do
-                  if r.edit then
-                    vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
-                  else
-                    vim.lsp.buf.execute_command(r.command)
+              local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 2000)
+              
+              if result and not vim.tbl_isempty(result) then
+                for _, res in pairs(result) do
+                  if res and res.result then
+                    for _, r in pairs(res.result) do
+                      if r.edit then
+                        vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                      elseif r.command then
+                        vim.lsp.buf.execute_command(r.command)
+                      end
+                    end
                   end
                 end
               end

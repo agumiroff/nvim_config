@@ -3,7 +3,7 @@
 -- ============================================================================
 
 return {
-  -- Catppuccin Theme (Mocha flavor with transparent background)
+  -- Catppuccin Theme (Latte flavor - light, like Xcode)
   {
     "catppuccin/nvim",
     name = "catppuccin",

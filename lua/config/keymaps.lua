@@ -46,7 +46,7 @@ keymap("n", "K", "<C-u>", opts)  -- Scroll up half page
 
 -- Save and quit shortcuts
 keymap("n", "<C-s>", ":w<CR>", opts)
-keymap("n", "<leader>q", ":q<CR>", opts)
+keymap("n", "<leader>q", ":bd<CR>", opts)
 keymap("n", "<leader>Q", ":qa!<CR>", opts)
 
 -- ============================================================================
@@ -109,6 +109,9 @@ keymap("n", "<leader>fr", ":Telescope oldfiles<CR>", { noremap = true, silent = 
 -- Help tags
 keymap("n", "<leader>fh", ":Telescope help_tags<CR>", { noremap = true, silent = true, desc = "Help tags" })
 
+-- Search in Neovim config folder
+keymap("n", "<leader>fn", ":Telescope find_files cwd=" .. vim.fn.stdpath("config") .. "<CR>", { noremap = true, silent = true, desc = "Find in Neovim config" })
+
 -- ============================================================================
 -- FILE TREE (NEO-TREE)
 -- ============================================================================
@@ -166,7 +169,29 @@ keymap("n", "<leader>rn", vim.lsp.buf.rename, { noremap = true, silent = true, d
 keymap("n", "<leader>fm", vim.lsp.buf.format, { noremap = true, silent = true, desc = "Format file" })
 
 -- Diagnostics
-keymap("n", "<leader>d", vim.diagnostic.open_float, { noremap = true, silent = true, desc = "Show diagnostics" })
+keymap("n", "<leader>dd", ":Telescope diagnostics<CR>", { noremap = true, silent = true, desc = "Show all diagnostics" })
+keymap("n", "<leader>de", vim.diagnostic.open_float, { noremap = true, silent = true, desc = "Show diagnostic at cursor" })
+keymap("n", "<leader>dy", function()
+  local diags = vim.diagnostic.get(0)
+  local line = vim.fn.line(".") - 1
+  local col = vim.fn.col(".") - 1
+  
+  local diag_at_cursor = nil
+  for _, diag in ipairs(diags) do
+    if diag.lnum == line then
+      diag_at_cursor = diag
+      break
+    end
+  end
+  
+  if diag_at_cursor then
+    local message = diag_at_cursor.message
+    vim.fn.setreg("+", message)
+    vim.notify("Diagnostic copied: " .. message, vim.log.levels.INFO)
+  else
+    vim.notify("No diagnostic at cursor", vim.log.levels.WARN)
+  end
+end, { noremap = true, silent = true, desc = "Copy diagnostic at cursor" })
 keymap("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "Previous diagnostic" })
 keymap("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "Next diagnostic" })
 
