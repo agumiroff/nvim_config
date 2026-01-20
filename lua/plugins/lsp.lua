@@ -76,91 +76,100 @@ return {
         border = "rounded",
       })
 
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-        border = "rounded",
-      })
+       vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+         border = "rounded",
+       })
 
-      -- Go (gopls) configuration
-      vim.lsp.config.gopls = {
-        cmd = { "gopls" },
-        filetypes = { "go", "gomod", "gowork", "gotmpl" },
-        root_markers = { "go.work", "go.mod", ".git" },
-        capabilities = capabilities,
-        settings = {
-          gopls = {
-            analyses = {
-              unusedparams = true,
-              shadow = true,
-            },
-            staticcheck = true,
-            gofumpt = true,
-          },
-        },
-      }
+       -- Go (gopls) configuration
+       vim.lsp.config.gopls = {
+         cmd = { "gopls" },
+         filetypes = { "go", "gomod", "gowork", "gotmpl" },
+         root_markers = { "go.work", "go.mod", ".git" },
+         capabilities = capabilities,
+         settings = {
+           gopls = {
+             analyses = {
+               unusedparams = true,
+               shadow = true,
+             },
+             staticcheck = true,
+             gofumpt = true,
+           },
+         },
+       }
 
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "go",
-        callback = function(args)
-          vim.lsp.enable("gopls")
+       -- Ensure gopls is started when opening a Go file
+       vim.api.nvim_create_autocmd("FileType", {
+         pattern = "go",
+         callback = function(args)
+           -- Silently enable gopls without notifications
+           local ok, err = pcall(function()
+             vim.lsp.enable("gopls", { bufnr = args.buf })
+           end)
+           
+           if not ok then
+             -- Only notify on error
+             vim.notify("Error starting gopls: " .. tostring(err), vim.log.levels.ERROR)
+           end
 
-          -- Auto-format on save with goimports
-          vim.api.nvim_create_autocmd("BufWritePre", {
-            buffer = args.buf,
-            callback = function()
-              -- Format first
-              vim.lsp.buf.format({ async = false })
-              
-              -- Then organize imports
-              local params = vim.lsp.util.make_range_params()
-              params.context = { only = { "source.organizeImports" } }
-              local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 2000)
-              
-              if result and not vim.tbl_isempty(result) then
-                for _, res in pairs(result) do
-                  if res and res.result then
-                    for _, r in pairs(res.result) do
-                      if r.edit then
-                        vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
-                      elseif r.command then
-                        vim.lsp.buf.execute_command(r.command)
-                      end
-                    end
-                  end
-                end
-              end
-            end,
-          })
-        end,
-      })
+           -- Auto-format on save with goimports
+           vim.api.nvim_create_autocmd("BufWritePre", {
+             buffer = args.buf,
+             callback = function()
+               -- Format first
+               vim.lsp.buf.format({ async = false })
+               
+               -- Then organize imports
+               local params = vim.lsp.util.make_range_params()
+               params.context = { only = { "source.organizeImports" } }
+               local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 2000)
+               
+               if result and not vim.tbl_isempty(result) then
+                 for _, res in pairs(result) do
+                   if res and res.result then
+                     for _, r in pairs(res.result) do
+                       if r.edit then
+                         vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
+                       elseif r.command then
+                         vim.lsp.buf.execute_command(r.command)
+                       end
+                     end
+                   end
+                 end
+               end
+             end,
+           })
+         end,
+       })
 
-      -- Lua language server (for Neovim config)
-      vim.lsp.config.lua_ls = {
-        cmd = { "lua-language-server" },
-        filetypes = { "lua" },
-        root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
-        capabilities = capabilities,
-        settings = {
-          Lua = {
-            diagnostics = {
-              globals = { "vim" },
-            },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-              checkThirdParty = false,
-            },
-            telemetry = {
-              enable = false,
-            },
-          },
-        },
-      }
+       -- Lua language server (for Neovim config)
+       vim.lsp.config.lua_ls = {
+         cmd = { "lua-language-server" },
+         filetypes = { "lua" },
+         root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
+         capabilities = capabilities,
+         settings = {
+           Lua = {
+             diagnostics = {
+               globals = { "vim" },
+             },
+             workspace = {
+               library = vim.api.nvim_get_runtime_file("", true),
+               checkThirdParty = false,
+             },
+             telemetry = {
+               enable = false,
+             },
+           },
+         },
+       }
 
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "lua",
-        callback = function()
-          vim.lsp.enable("lua_ls")
-        end,
-      })
+       vim.api.nvim_create_autocmd("FileType", {
+         pattern = "lua",
+         callback = function(args)
+           vim.lsp.enable("lua_ls", { bufnr = args.buf })
+         end,
+       })
     end,
   },
 

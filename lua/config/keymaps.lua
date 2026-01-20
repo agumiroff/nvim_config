@@ -34,8 +34,18 @@ keymap("v", "K", ":m '<-2<CR>gv=gv", opts)
 -- Better paste (don't yank replaced text)
 keymap("v", "p", '"_dP', opts)
 
--- Clear search highlighting
-keymap("n", "<Esc>", ":noh<CR>", opts)
+-- Clear search highlighting and close quickfix/location list
+keymap("n", "<Esc>", function()
+  vim.cmd("noh")
+  -- Close quickfix if open
+  if vim.fn.getqflist({ winid = 0 }).winid ~= 0 then
+    vim.cmd("cclose")
+  end
+  -- Close location list if open
+  if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
+    vim.cmd("lclose")
+  end
+end, opts)
 
 -- Undo and Redo
 keymap("n", "U", "<C-r>", { noremap = true, silent = true, desc = "Redo" })
@@ -46,7 +56,69 @@ keymap("n", "K", "<C-u>", opts)  -- Scroll up half page
 
 -- Save and quit shortcuts
 keymap("n", "<C-s>", ":w<CR>", opts)
-keymap("n", "<leader>q", ":bd<CR>", opts)
+-- Buffer stack for each window
+local buffer_stack = {}
+
+local function get_window_id()
+  return vim.fn.win_getid()
+end
+
+local function push_buffer()
+  local win_id = get_window_id()
+  local bufnr = vim.api.nvim_get_current_buf()
+  
+  if buffer_stack[win_id] == nil then
+    buffer_stack[win_id] = {}
+  end
+  
+  -- Avoid duplicate consecutive buffers in stack
+  if buffer_stack[win_id][#buffer_stack[win_id]] ~= bufnr then
+    table.insert(buffer_stack[win_id], bufnr)
+  end
+end
+
+local function pop_buffer()
+  local win_id = get_window_id()
+  
+  if buffer_stack[win_id] == nil or #buffer_stack[win_id] == 0 then
+    return nil
+  end
+  
+  return table.remove(buffer_stack[win_id])
+end
+
+-- Track buffer changes
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    push_buffer()
+  end,
+})
+
+keymap("n", "<leader>q", function()
+  -- Close current buffer, but keep the window open and show previous buffer from stack
+  local bufnr = vim.api.nvim_get_current_buf()
+  local buffers = vim.fn.getbufinfo({ buflisted = 1 })
+  
+  if #buffers > 1 then
+    -- Pop current buffer from stack
+    pop_buffer()
+    -- Get the previous buffer from stack
+    local prev_buf = pop_buffer()
+    
+    if prev_buf and vim.fn.bufexists(prev_buf) == 1 then
+      vim.cmd("buffer " .. prev_buf)
+    else
+      -- If no previous buffer in stack, use alternate
+      vim.cmd("buffer #")
+    end
+    
+    vim.cmd("bd " .. bufnr)
+  else
+    -- If this is the last buffer, close it
+    vim.cmd("bd")
+  end
+end, { noremap = true, silent = true, desc = "Close buffer" })
+keymap("n", "<leader>z", ":close<CR>", { noremap = true, silent = true, desc = "Close window/split" })
 keymap("n", "<leader>Q", ":qa!<CR>", opts)
 
 -- ============================================================================
@@ -66,8 +138,8 @@ keymap("n", "<leader>w", ":Telescope buffers<CR>", { noremap = true, silent = tr
 -- File search
 keymap("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true, desc = "Find files" })
 
--- Jump to last change
-keymap("n", "<leader>ll", "g;", { noremap = true, silent = true, desc = "Jump to last change" })
+-- Jump to last position in jump list
+keymap("n", "<leader>ll", "<C-o>", { noremap = true, silent = true, desc = "Jump to last position" })
 
 -- Jump to last edit in current buffer
 keymap("n", "<leader>ac", function()
@@ -123,41 +195,23 @@ keymap("n", "<leader>e", ":Neotree toggle float reveal<CR>", { noremap = true, s
 -- LSP NAVIGATION (Go-specific)
 -- ============================================================================
 
--- Search by symbols
-keymap("n", "<leader>gg", ":Telescope lsp_document_symbols<CR>", { noremap = true, silent = true, desc = "Search symbols" })
+-- Ripgrep search
+keymap("n", "<leader>gg", ":Telescope live_grep<CR>", { noremap = true, silent = true, desc = "Ripgrep search" })
 
--- Helper function: move to nearest function if not under cursor
-local function lsp_action_on_function(action_name, telescope_cmd)
-  return function()
-    -- Try action at current position
-    local params = vim.lsp.util.make_position_params()
-    local result = vim.lsp.buf_request_sync(0, "textDocument/hover", params, 1000)
-    
-    -- If no result, try to find nearest function forward
-    if not result or vim.tbl_isempty(result) then
-      -- Use treesitter to find next function
-      local ok, ts_utils = pcall(require, "nvim-treesitter.textobjects.move")
-      if ok then
-        ts_utils.goto_next_start("@function.outer")
-      end
-    end
-    
-    -- Execute the action
-    vim.cmd(telescope_cmd)
-  end
-end
+-- Go to definition
+keymap("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true, desc = "Go to definition" })
 
--- Go to definition (with function fallback)
-keymap("n", "<leader>gd", lsp_action_on_function("definition", "Telescope lsp_definitions"), { noremap = true, silent = true, desc = "Go to definition" })
+-- Go to implementation
+keymap("n", "<leader>gi", vim.lsp.buf.implementation, { noremap = true, silent = true, desc = "Go to implementation" })
 
--- Go to implementation (with function fallback)
-keymap("n", "<leader>gi", lsp_action_on_function("implementation", "Telescope lsp_implementations"), { noremap = true, silent = true, desc = "Go to implementation" })
-
--- List references (with function fallback)
-keymap("n", "<leader>gr", lsp_action_on_function("references", "Telescope lsp_references"), { noremap = true, silent = true, desc = "List references" })
+-- List references
+keymap("n", "<leader>gr", vim.lsp.buf.references, { noremap = true, silent = true, desc = "List references" })
 
 -- Hover info
 keymap("n", "<leader>gl", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "Hover info" })
+
+-- Signature help
+keymap("n", "<leader>gs", vim.lsp.buf.signature_help, { noremap = true, silent = true, desc = "Signature help" })
 
 -- Code actions
 keymap("n", "<leader>ca", vim.lsp.buf.code_action, { noremap = true, silent = true, desc = "Code actions" })
@@ -194,6 +248,20 @@ keymap("n", "<leader>dy", function()
 end, { noremap = true, silent = true, desc = "Copy diagnostic at cursor" })
 keymap("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "Previous diagnostic" })
 keymap("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "Next diagnostic" })
+
+-- ============================================================================
+-- DEBUG
+-- ============================================================================
+
+keymap("n", "<leader>ld", function()
+  local debug_lsp = require("config.debug_lsp")
+  debug_lsp.status()
+end, { noremap = true, silent = false, desc = "Debug LSP" })
+
+keymap("n", "<leader>ls", function()
+  local debug_lsp = require("config.debug_lsp")
+  debug_lsp.start_gopls()
+end, { noremap = true, silent = false, desc = "Start gopls" })
 
 -- ============================================================================
 -- GO-SPECIFIC (go.nvim)

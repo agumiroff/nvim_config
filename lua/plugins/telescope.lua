@@ -7,6 +7,7 @@ return {
         "nvim-telescope/telescope-fzf-native.nvim",
         build = "make",
       },
+      "nvim-telescope/telescope.nvim", -- built-in LSP pickers
     },
     config = function()
       local telescope = require("telescope")
@@ -24,26 +25,34 @@ return {
             "vendor/",
           },
 
-          mappings = {
-            i = {
-              ["<C-j>"] = actions.move_selection_next,
-              ["<C-k>"] = actions.move_selection_previous,
+           mappings = {
+             i = {
+               ["<C-j>"] = actions.move_selection_next,
+               ["<C-k>"] = actions.move_selection_previous,
 
-              ["<C-q>"] = function(...)
-                actions.send_selected_to_qflist(...)
-                actions.open_qflist(...)
-              end,
+               ["<C-q>"] = function(...)
+                 actions.send_selected_to_qflist(...)
+                 actions.open_qflist(...)
+               end,
 
-              ["<Esc>"] = actions.close,
-            },
-            n = {
-              ["q"] = actions.close,
-            },
-          },
+               ["<Esc>"] = actions.close,
+             },
+             n = {
+               ["q"] = actions.close,
+               ["<Esc>"] = actions.close,
+             },
+           },
         },
 
         pickers = {
-          find_files = { hidden = true },
+          find_files = {
+            hidden = true,
+            mappings = {
+              i = {
+                ["<S-CR>"] = actions.select_vertical,
+              },
+            },
+          },
           buffers = {
             sort_mru = true,
             ignore_current_buffer = false,
@@ -53,19 +62,14 @@ return {
               n = {
                 ["dd"] = actions.delete_buffer,
                 ["x"] = actions.delete_buffer,
+                ["s"] = actions.select_vertical,
               },
             },
           },
         },
-      })
+       })
 
-      telescope.load_extension("fzf")
-
-      -- KEYMAPS
-      local builtin = require("telescope.builtin")
-      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
-      vim.keymap.set("n", "<leader>w", builtin.buffers, { desc = "Buffers" })
-      vim.keymap.set("n", "<leader>ll", builtin.lsp_document_symbols, { desc = "Last edits" })
+       telescope.load_extension("fzf")
     end,
   },
 }

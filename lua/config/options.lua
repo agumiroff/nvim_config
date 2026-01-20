@@ -57,3 +57,10 @@ opt.lazyredraw = true               -- Don't redraw during macros
 
 -- Completion
 opt.completeopt = { "menu", "menuone", "noselect" }
+
+-- Buffer management
+opt.hidden = true                       -- Allow switching buffers without saving
+
+-- Word boundary settings
+opt.iskeyword:remove("_")                -- Treat underscore as word separator (for snake_case)
+-- This makes w, e, b movements treat camelCase and snake_case as separate words
