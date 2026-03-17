@@ -36,7 +36,7 @@ return {
             ["t"] = "open_tabnew",
             ["w"] = "open_with_window_picker",
             ["C"] = "close_node",
-            ["o"] = "close_all_nodes",
+            ["O"] = "close_all_nodes",
             ["Z"] = "expand_all_nodes",
             ["R"] = "refresh",
             ["a"] = {

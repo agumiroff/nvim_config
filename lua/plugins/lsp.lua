@@ -72,9 +72,9 @@ return {
       end
 
       -- LSP handlers
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-        border = "rounded",
-      })
+       vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+         border = "rounded",
+       })
 
        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
          border = "rounded",
@@ -106,7 +106,7 @@ return {
            local ok, err = pcall(function()
              vim.lsp.enable("gopls", { bufnr = args.buf })
            end)
-           
+
            if not ok then
              -- Only notify on error
              vim.notify("Error starting gopls: " .. tostring(err), vim.log.levels.ERROR)
@@ -118,12 +118,12 @@ return {
              callback = function()
                -- Format first
                vim.lsp.buf.format({ async = false })
-               
+
                -- Then organize imports
                local params = vim.lsp.util.make_range_params()
                params.context = { only = { "source.organizeImports" } }
                local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 2000)
-               
+
                if result and not vim.tbl_isempty(result) then
                  for _, res in pairs(result) do
                    if res and res.result then
@@ -218,14 +218,21 @@ return {
       "saadparwaiz1/cmp_luasnip",
       "rafamadriz/friendly-snippets",
     },
-    config = function()
-      local cmp = require("cmp")
-      local luasnip = require("luasnip")
+     config = function()
+       local cmp = require("cmp")
+       local luasnip = require("luasnip")
 
-      -- Load snippets
-      require("luasnip.loaders.from_vscode").lazy_load()
+       -- Configure LuaSnip
+       luasnip.config.set_config({
+         history = true,
+         updateevents = "TextChanged,TextChangedI",
+         enable_autosnippets = false,
+       })
 
-      cmp.setup({
+       -- Load snippets
+       require("luasnip.loaders.from_vscode").lazy_load()
+
+       cmp.setup({
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -241,24 +248,20 @@ return {
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
-          ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-              luasnip.expand_or_jump()
-            else
-              fallback()
-            end
-          end, { "i", "s" }),
-          ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-              luasnip.jump(-1)
-            else
-              fallback()
-            end
-          end, { "i", "s" }),
+           ["<Tab>"] = cmp.mapping(function(fallback)
+             if cmp.visible() then
+               cmp.select_next_item()
+             else
+               fallback()
+             end
+           end, { "i", "s" }),
+           ["<S-Tab>"] = cmp.mapping(function(fallback)
+             if cmp.visible() then
+               cmp.select_prev_item()
+             else
+               fallback()
+             end
+           end, { "i", "s" }),
         }),
         sources = cmp.config.sources({
           { name = "nvim_lsp" },

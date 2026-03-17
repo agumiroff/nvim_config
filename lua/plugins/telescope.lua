@@ -13,17 +13,17 @@ return {
       local telescope = require("telescope")
       local actions = require("telescope.actions")
 
-      telescope.setup({
-        defaults = {
-          prompt_prefix = " ",
-          selection_caret = " ",
-          path_display = { "smart" },
+       telescope.setup({
+         defaults = {
+           prompt_prefix = " ",
+           selection_caret = " ",
+           path_display = { "smart" },
 
-          file_ignore_patterns = {
-            "^%.git/",
-            "node_modules",
-            "vendor/",
-          },
+           file_ignore_patterns = {
+             "^%.git/",
+             "node_modules",
+             "vendor/",
+           },
 
            mappings = {
              i = {
@@ -42,31 +42,31 @@ return {
                ["<Esc>"] = actions.close,
              },
            },
-        },
+         },
 
-        pickers = {
-          find_files = {
-            hidden = true,
-            mappings = {
-              i = {
-                ["<S-CR>"] = actions.select_vertical,
-              },
-            },
-          },
-          buffers = {
-            sort_mru = true,
-            ignore_current_buffer = false,
-            initial_mode = "normal",
-            mappings = {
-              i = { ["<C-d>"] = actions.delete_buffer },
-              n = {
-                ["dd"] = actions.delete_buffer,
-                ["x"] = actions.delete_buffer,
-                ["s"] = actions.select_vertical,
-              },
-            },
-          },
-        },
+         pickers = {
+           find_files = {
+             hidden = true,
+             mappings = {
+               i = {
+                 ["<S-CR>"] = actions.select_vertical,
+               },
+             },
+           },
+           buffers = {
+             sort_mru = true,
+             ignore_current_buffer = false,
+             initial_mode = "normal",
+             mappings = {
+               i = { ["<C-d>"] = actions.delete_buffer },
+               n = {
+                 ["dd"] = actions.delete_buffer,
+                 ["x"] = actions.delete_buffer,
+                 ["s"] = actions.select_vertical,
+               },
+             },
+           },
+         },
        })
 
        telescope.load_extension("fzf")
