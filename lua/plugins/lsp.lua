@@ -112,31 +112,14 @@ return {
              vim.notify("Error starting gopls: " .. tostring(err), vim.log.levels.ERROR)
            end
 
-           -- Auto-format on save with goimports
+           -- Organize imports on save (formatting handled by go.nvim)
            vim.api.nvim_create_autocmd("BufWritePre", {
              buffer = args.buf,
              callback = function()
-               -- Format first
-               vim.lsp.buf.format({ async = false })
-
-               -- Then organize imports
-               local params = vim.lsp.util.make_range_params()
-               params.context = { only = { "source.organizeImports" } }
-               local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 2000)
-
-               if result and not vim.tbl_isempty(result) then
-                 for _, res in pairs(result) do
-                   if res and res.result then
-                     for _, r in pairs(res.result) do
-                       if r.edit then
-                         vim.lsp.util.apply_workspace_edit(r.edit, "utf-8")
-                       elseif r.command then
-                         vim.lsp.buf.execute_command(r.command)
-                       end
-                     end
-                   end
-                 end
-               end
+               vim.lsp.buf.code_action({
+                 context = { only = { "source.organizeImports" } },
+                 apply = true,
+               })
              end,
            })
          end,

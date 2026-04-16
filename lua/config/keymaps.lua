@@ -108,8 +108,13 @@ keymap("n", "<leader>q", function()
     if prev_buf and vim.fn.bufexists(prev_buf) == 1 then
       vim.cmd("buffer " .. prev_buf)
     else
-      -- If no previous buffer in stack, use alternate
-      vim.cmd("buffer #")
+      -- If no previous buffer in stack, use alternate (if it exists)
+      local alt = vim.fn.bufnr("#")
+      if alt ~= -1 and vim.fn.buflisted(alt) == 1 then
+        vim.cmd("buffer " .. alt)
+      else
+        vim.cmd("bprevious")
+      end
     end
     
     vim.cmd("bd " .. bufnr)

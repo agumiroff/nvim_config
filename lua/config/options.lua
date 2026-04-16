@@ -52,9 +52,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Performance
-opt.lazyredraw = true               -- Don't redraw during macros
-
 -- Completion
 opt.completeopt = { "menu", "menuone", "noselect" }
 

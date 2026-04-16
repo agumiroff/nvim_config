@@ -80,7 +80,7 @@ return {
             vim.keymap.set("n", "<leader>gm", "<cmd>GoMod tidy<CR>", vim.tbl_extend("force", opts, { desc = "Go mod tidy" }))
             
             -- Code navigation
-            vim.keymap.set("n", "<leader>gs", "<cmd>GoFillSwitch<CR>", vim.tbl_extend("force", opts, { desc = "Go fill switch" }))
+            vim.keymap.set("n", "<leader>gS", "<cmd>GoFillSwitch<CR>", vim.tbl_extend("force", opts, { desc = "Go fill switch" }))
          end,
        })
     end,
