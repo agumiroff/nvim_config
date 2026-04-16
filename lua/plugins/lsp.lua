@@ -232,7 +232,13 @@ return {
        -- Load snippets
        require("luasnip.loaders.from_vscode").lazy_load()
 
+       -- Default: autocompletion enabled
+       vim.g.cmp_enabled = true
+
        cmp.setup({
+        enabled = function()
+          return vim.g.cmp_enabled
+        end,
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)

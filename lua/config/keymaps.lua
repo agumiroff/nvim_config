@@ -141,6 +141,13 @@ keymap("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent 
 -- Jump to last position in jump list
 keymap("n", "<leader>ll", "<C-o>", { noremap = true, silent = true, desc = "Jump to last position" })
 
+-- Toggle autocompletion
+keymap("n", "<leader>a", function()
+  vim.g.cmp_enabled = not vim.g.cmp_enabled
+  local status = vim.g.cmp_enabled and "enabled" or "disabled"
+  vim.notify("Autocompletion " .. status, vim.log.levels.INFO)
+end, { noremap = true, silent = true, desc = "Toggle autocompletion" })
+
 -- Jump to last edit in current buffer
 keymap("n", "<leader>ac", function()
   local pos = vim.fn.getpos("'.")
